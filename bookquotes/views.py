@@ -8,16 +8,17 @@ from .serializers import QuoteRequestSerializer
 def submit_quote(request):
     serializer = QuoteRequestSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-
+        quote = serializer.save()  # Save instance and keep reference
         pdf_url = '/media/quotes/sample_quote.pdf'
 
         return Response({
             'message': 'Quote submitted successfully!',
-            'pdf_url': pdf_url
+            'pdf_url': pdf_url,
+            'quote': QuoteRequestSerializer(quote).data 
         }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['GET'])
