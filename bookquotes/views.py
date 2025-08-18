@@ -129,10 +129,12 @@ def submit_quote(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_quotes(request):
     quotes = QuoteRequest.objects.all().order_by('-submitted_at')
     serializer = QuoteRequestSerializer(quotes, many=True)
     return Response(serializer.data)
+
 
 
 @api_view(['DELETE'])
