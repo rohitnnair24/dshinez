@@ -44,7 +44,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             key='access_token',
             value=str(access_token),
             httponly=True,
-            secure=False,     
+            secure=False,       # ✅ Dev mode
             samesite='None',
             path='/'
         )
@@ -52,7 +52,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             key='refresh_token',
             value=str(refresh_token),
             httponly=True,
-            secure=False,       
+            secure=False,       # ✅ Dev mode
             samesite='None',
             path='/'
         )
@@ -112,11 +112,11 @@ def is_logged_in(request):
 
 # ---------------- QUOTE VIEWS ----------------
 @api_view(['POST'])
+@permission_classes([AllowAny])  
 def submit_quote(request):
     serializer = QuoteRequestSerializer(data=request.data)
     if serializer.is_valid():
         quote = serializer.save()
-        # ✅ Adjust based on your QuoteRequest model (assuming a FileField or something similar)
         pdf_url = quote.pdf_file.url if hasattr(quote, 'pdf_file') and quote.pdf_file else None
 
         return Response({

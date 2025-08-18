@@ -19,7 +19,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('bookquotes/', include('bookquotes.urls')),  # ✅ add prefix
+    path('bookquotes/', include('bookquotes.urls')),  
 ]
 
 
