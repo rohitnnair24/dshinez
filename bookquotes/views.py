@@ -81,6 +81,13 @@ class CustomTokenRefreshView(TokenRefreshView):
             return res
         except Exception as e:
             return Response({'refreshed': False, 'error': str(e)}, status=400)
+        
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_todos(request):
+    todos = Todo.objects.filter(owner=request.user)
+    serializer = TodoSerializer(todos, many=True)
+    return Response(serializer.data)
 
 
 @api_view(['POST'])
