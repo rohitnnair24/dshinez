@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import environ
+from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,7 +46,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'bookquotes',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +61,40 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000"
+# ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'base.authentication.CookiesJWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
+
+    'AUTH_COOKIE': 'access_token',  # Cookie name for the access token
+    'AUTH_COOKIE_REFRESH': 'refresh_token',  # Cookie name for the refresh token
+    'AUTH_COOKIE_SECURE': False,  # Set to True if using HTTPS
+    'AUTH_COOKIE_HTTP_ONLY': True,  # Make the cookie HTTP only
+    'AUTH_COOKIE_PATH': '/',  # Root path for the cookie
+    'AUTH_COOKIE_SAMESITE': 'Lax',  # Adjust according to your needs
+
+}
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
 
 
 CORS_ALLOW_ALL_ORIGINS = True 
