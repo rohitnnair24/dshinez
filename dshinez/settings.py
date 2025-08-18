@@ -69,7 +69,7 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'base.authentication.CookiesJWTAuthentication',
+        'bookquotes.authentication.CookiesJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -83,14 +83,14 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
 
-    'AUTH_COOKIE': 'access_token',  # Cookie name for the access token
-    'AUTH_COOKIE_REFRESH': 'refresh_token',  # Cookie name for the refresh token
-    'AUTH_COOKIE_SECURE': False,  # Set to True if using HTTPS
-    'AUTH_COOKIE_HTTP_ONLY': True,  # Make the cookie HTTP only
-    'AUTH_COOKIE_PATH': '/',  # Root path for the cookie
-    'AUTH_COOKIE_SAMESITE': 'Lax',  # Adjust according to your needs
-
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_REFRESH': 'refresh_token',
+    'AUTH_COOKIE_SECURE': False,   
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'None',  
 }
+
 
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
