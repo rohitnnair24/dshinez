@@ -8,6 +8,8 @@ class QuoteRequest(models.Model):
     location = models.CharField(max_length=100)  
     submitted_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.name} - {self.email}"
 
 
 class Todo(models.Model):
@@ -17,7 +19,3 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.name
-
-
-    def __str__(self):
-        return f"{self.name} - {self.email}"

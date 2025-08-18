@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -10,12 +9,11 @@ from .models import QuoteRequest, Todo
 from .serializers import QuoteRequestSerializer, TodoSerializer, UserSerializer
 
 
-# 🚨 In production, move these into .env
+# ---------------- AUTH VIEWS ----------------
 DEFAULT_ADMIN_USERNAME = "adminuser"
 DEFAULT_ADMIN_PASSWORD = "Admin@123"
 
 
-# ---------------- AUTH VIEWS ----------------
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
@@ -24,13 +22,12 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         if username != DEFAULT_ADMIN_USERNAME or password != DEFAULT_ADMIN_PASSWORD:
             return Response({'success': False, 'error': 'Invalid credentials'}, status=401)
 
-        # Ensure default admin exists
         user, created = User.objects.get_or_create(username=DEFAULT_ADMIN_USERNAME)
         if created:
             user.set_password(DEFAULT_ADMIN_PASSWORD)
             user.save()
 
-        # Call parent view to generate tokens
+        # Generate tokens
         request.data['username'] = DEFAULT_ADMIN_USERNAME
         request.data['password'] = DEFAULT_ADMIN_PASSWORD
         response = super().post(request, *args, **kwargs)
@@ -44,7 +41,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             key='access_token',
             value=str(access_token),
             httponly=True,
-            secure=False,       # ✅ Dev mode
+            secure=False,
             samesite='None',
             path='/'
         )
@@ -52,7 +49,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             key='refresh_token',
             value=str(refresh_token),
             httponly=True,
-            secure=False,       # ✅ Dev mode
+            secure=False,
             samesite='None',
             path='/'
         )
@@ -77,7 +74,7 @@ class CustomTokenRefreshView(TokenRefreshView):
                 key='access_token',
                 value=access_token,
                 httponly=True,
-                secure=False,   # ✅ Dev mode
+                secure=False,
                 samesite='None',
                 path='/'
             )
@@ -97,14 +94,6 @@ def logout(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_todos(request):
-    todos = Todo.objects.filter(owner=request.user)
-    serializer = TodoSerializer(todos, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def is_logged_in(request):
     serializer = UserSerializer(request.user, many=False)
     return Response(serializer.data)
@@ -112,12 +101,18 @@ def is_logged_in(request):
 
 # ---------------- QUOTE VIEWS ----------------
 @api_view(['POST'])
-@permission_classes([AllowAny])  
+@permission_classes([AllowAny])
 def submit_quote(request):
+    """
+    Submit a new quote. Public API.
+    Returns a sample PDF link for download.
+    """
     serializer = QuoteRequestSerializer(data=request.data)
     if serializer.is_valid():
         quote = serializer.save()
-        pdf_url = quote.pdf_file.url if hasattr(quote, 'pdf_file') and quote.pdf_file else None
+
+        # Serve a sample PDF for now
+        pdf_url = '/media/quotes/sample_quote.pdf'
 
         return Response({
             'message': 'Quote submitted successfully!',
@@ -131,14 +126,21 @@ def submit_quote(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_quotes(request):
+    """
+    Admin API: fetch all submitted quotes.
+    Requires JWT authentication.
+    """
     quotes = QuoteRequest.objects.all().order_by('-submitted_at')
     serializer = QuoteRequestSerializer(quotes, many=True)
     return Response(serializer.data)
 
 
-
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_quote(request, quote_id):
+    """
+    Admin API: delete a specific quote.
+    """
     try:
         quote = QuoteRequest.objects.get(id=quote_id)
         quote.delete()
@@ -148,6 +150,10 @@ def delete_quote(request, quote_id):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_all_quotes(request):
+    """
+    Admin API: delete all quotes.
+    """
     QuoteRequest.objects.all().delete()
     return Response({'message': 'All quotes deleted successfully'}, status=200)
