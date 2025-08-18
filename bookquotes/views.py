@@ -1,24 +1,21 @@
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from .models import QuoteRequest
-from .serializers import QuoteRequestSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .models import Todo
-from .serializers import TodoSerializer, UserSerializer
+
+from .models import QuoteRequest, Todo
+from .serializers import QuoteRequestSerializer, TodoSerializer, UserSerializer
 
 
-
-
-
-# Set default admin credentials here
+# 🚨 In production, move these into .env
 DEFAULT_ADMIN_USERNAME = "adminuser"
 DEFAULT_ADMIN_PASSWORD = "Admin@123"
 
+
+# ---------------- AUTH VIEWS ----------------
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
@@ -27,30 +24,27 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         if username != DEFAULT_ADMIN_USERNAME or password != DEFAULT_ADMIN_PASSWORD:
             return Response({'success': False, 'error': 'Invalid credentials'}, status=401)
 
-        # Authenticate the default admin user (create if not exists)
+        # Ensure default admin exists
         user, created = User.objects.get_or_create(username=DEFAULT_ADMIN_USERNAME)
         if created:
             user.set_password(DEFAULT_ADMIN_PASSWORD)
             user.save()
 
-        # Generate tokens using super
+        # Call parent view to generate tokens
         request.data['username'] = DEFAULT_ADMIN_USERNAME
         request.data['password'] = DEFAULT_ADMIN_PASSWORD
         response = super().post(request, *args, **kwargs)
-        tokens = response.data
 
+        tokens = response.data
         access_token = tokens['access']
         refresh_token = tokens['refresh']
 
-        serializer = UserSerializer(user, many=False)
-
-        res = Response()
-        res.data = {'success': True}
+        res = Response({'success': True, **tokens})
         res.set_cookie(
             key='access_token',
             value=str(access_token),
             httponly=True,
-            secure=True,
+            secure=False,     
             samesite='None',
             path='/'
         )
@@ -58,57 +52,56 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             key='refresh_token',
             value=str(refresh_token),
             httponly=True,
-            secure=True,
+            secure=False,       
             samesite='None',
             path='/'
         )
-        res.data.update(tokens)
         return res
+
 
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         try:
             refresh_token = request.COOKIES.get('refresh_token')
+            if not refresh_token:
+                return Response({'refreshed': False, 'error': 'No refresh token'}, status=400)
+
             request.data['refresh'] = refresh_token
             response = super().post(request, *args, **kwargs)
+
             tokens = response.data
             access_token = tokens['access']
 
-            res = Response()
-            res.data = {'refreshed': True}
+            res = Response({'refreshed': True, **tokens})
             res.set_cookie(
                 key='access_token',
                 value=access_token,
                 httponly=True,
-                secure=False,
+                secure=False,   # ✅ Dev mode
                 samesite='None',
                 path='/'
             )
             return res
         except Exception as e:
-            print(e)
-            return Response({'refreshed': False})
+            return Response({'refreshed': False, 'error': str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    try:
-        res = Response()
-        res.data = {'success': True}
-        res.delete_cookie('access_token', path='/', samesite='None')
-        res.delete_cookie('refresh_token', path='/', samesite='None')
-        return res
-    except Exception as e:
-        print(e)
-        return Response({'success': False})
+    res = Response({'success': True})
+    res.delete_cookie('access_token', path='/', samesite='None')
+    res.delete_cookie('refresh_token', path='/', samesite='None')
+    return res
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_todos(request):
-    user = request.user
-    todos = Todo.objects.filter(owner=user)
+    todos = Todo.objects.filter(owner=request.user)
     serializer = TodoSerializer(todos, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -117,28 +110,22 @@ def is_logged_in(request):
     return Response(serializer.data)
 
 
-
-
-
-
-
-
-
+# ---------------- QUOTE VIEWS ----------------
 @api_view(['POST'])
 def submit_quote(request):
     serializer = QuoteRequestSerializer(data=request.data)
     if serializer.is_valid():
-        quote = serializer.save()  # Save instance and keep reference
-        pdf_url = '/media/quotes/sample_quote.pdf'
+        quote = serializer.save()
+        # ✅ Adjust based on your QuoteRequest model (assuming a FileField or something similar)
+        pdf_url = quote.pdf_file.url if hasattr(quote, 'pdf_file') and quote.pdf_file else None
 
         return Response({
             'message': 'Quote submitted successfully!',
             'pdf_url': pdf_url,
-            'quote': QuoteRequestSerializer(quote).data 
+            'quote': QuoteRequestSerializer(quote).data
         }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @api_view(['GET'])
@@ -147,16 +134,18 @@ def get_all_quotes(request):
     serializer = QuoteRequestSerializer(quotes, many=True)
     return Response(serializer.data)
 
+
 @api_view(['DELETE'])
 def delete_quote(request, quote_id):
     try:
         quote = QuoteRequest.objects.get(id=quote_id)
         quote.delete()
-        return Response({'message': 'Quote deleted successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Quote deleted successfully'}, status=200)
     except QuoteRequest.DoesNotExist:
-        return Response({'error': 'Quote not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Quote not found'}, status=404)
+
 
 @api_view(['DELETE'])
 def delete_all_quotes(request):
     QuoteRequest.objects.all().delete()
-    return Response({'message': 'All quotes deleted successfully'}, status=status.HTTP_200_OK)
+    return Response({'message': 'All quotes deleted successfully'}, status=200)
