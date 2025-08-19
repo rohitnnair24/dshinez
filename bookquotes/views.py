@@ -172,7 +172,7 @@ def submit_contact(request):
 
 # ✅ Get all contacts (Admin only)
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])  
+@permission_classes([AllowAny])  
 def get_all_contacts(request):
     contacts = ContactRequest.objects.all().order_by('-submitted_at')
     serializer = ContactRequestSerializer(contacts, many=True)
