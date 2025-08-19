@@ -130,24 +130,19 @@ def submit_quote(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+from rest_framework.permissions import AllowAny
+
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])  
 def get_all_quotes(request):
-    """
-    Admin API: fetch all submitted quotes.
-    Requires JWT authentication.
-    """
     quotes = QuoteRequest.objects.all().order_by('-submitted_at')
     serializer = QuoteRequestSerializer(quotes, many=True)
     return Response(serializer.data)
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])   # 👈 no auth needed
 def delete_quote(request, quote_id):
-    """
-    Admin API: delete a specific quote.
-    """
     try:
         quote = QuoteRequest.objects.get(id=quote_id)
         quote.delete()
@@ -157,10 +152,8 @@ def delete_quote(request, quote_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])   # 👈 no auth needed
 def delete_all_quotes(request):
-    """
-    Admin API: delete all quotes.
-    """
     QuoteRequest.objects.all().delete()
     return Response({'message': 'All quotes deleted successfully'}, status=200)
+
