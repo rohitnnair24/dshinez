@@ -154,7 +154,7 @@ def delete_quote(request, quote_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def delete_all_quotes(request):
     QuoteRequest.objects.all().delete()
     return Response({'message': 'All quotes deleted successfully'}, status=200)
@@ -191,7 +191,7 @@ def delete_contact(request, contact_id):
 
 # ✅ Delete all contacts
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def delete_all_contacts(request):
     ContactRequest.objects.all().delete()
     return Response({"message": "All contacts deleted successfully"}, status=200)
