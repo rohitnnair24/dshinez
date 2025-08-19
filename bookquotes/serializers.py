@@ -2,6 +2,12 @@ from .models import QuoteRequest
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Todo
+from .models import ContactRequest
+
+class ContactRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactRequest
+        fields = "__all__"
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

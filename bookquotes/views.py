@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .models import ContactRequest
+from .serializers import ContactRequestSerializer
 
 from .models import QuoteRequest, Todo
 from .serializers import QuoteRequestSerializer, TodoSerializer, UserSerializer
@@ -156,4 +158,41 @@ def delete_quote(request, quote_id):
 def delete_all_quotes(request):
     QuoteRequest.objects.all().delete()
     return Response({'message': 'All quotes deleted successfully'}, status=200)
+
+
+# ✅ Submit new contact form
+@api_view(['POST'])
+@permission_classes([AllowAny])  # anyone can submit
+def submit_contact(request):
+    serializer = ContactRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "Contact submitted successfully"}, status=201)
+    return Response(serializer.errors, status=400)
+
+# ✅ Get all contacts (Admin only)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])  
+def get_all_contacts(request):
+    contacts = ContactRequest.objects.all().order_by('-submitted_at')
+    serializer = ContactRequestSerializer(contacts, many=True)
+    return Response(serializer.data)
+
+# ✅ Delete a single contact
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])  
+def delete_contact(request, contact_id):
+    try:
+        contact = ContactRequest.objects.get(id=contact_id)
+        contact.delete()
+        return Response({"message": "Contact deleted successfully"}, status=200)
+    except ContactRequest.DoesNotExist:
+        return Response({"error": "Contact not found"}, status=404)
+
+# ✅ Delete all contacts
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])  
+def delete_all_contacts(request):
+    ContactRequest.objects.all().delete()
+    return Response({"message": "All contacts deleted successfully"}, status=200)
 
