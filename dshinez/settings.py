@@ -80,7 +80,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "bookquotes.authentication.CookiesJWTAuthentication",              # cookies (if you use them)
         "rest_framework_simplejwt.authentication.JWTAuthentication",       # Authorization: Bearer <token>
-        "rest_framework.authentication.SessionAuthentication",             # optional (browsable API/admin)
+        "rest_framework.authentication.SessionAuthentication",           
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",                      # safe default
