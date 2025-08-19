@@ -77,13 +77,16 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "bookquotes.authentication.CookiesJWTAuthentication",
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ]
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "bookquotes.authentication.CookiesJWTAuthentication",              # cookies (if you use them)
+        "rest_framework_simplejwt.authentication.JWTAuthentication",       # Authorization: Bearer <token>
+        "rest_framework.authentication.SessionAuthentication",             # optional (browsable API/admin)
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",                      # safe default
+    ),
 }
+
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),

@@ -135,7 +135,7 @@ def submit_quote(request):
 from rest_framework.permissions import AllowAny
 
 @api_view(['GET'])
-@permission_classes([AllowAny])  
+@permission_classes([IsAuthenticated]) 
 def get_all_quotes(request):
     quotes = QuoteRequest.objects.all().order_by('-submitted_at')
     serializer = QuoteRequestSerializer(quotes, many=True)
@@ -143,7 +143,7 @@ def get_all_quotes(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])   # 👈 no auth needed
+@permission_classes([IsAuthenticated])
 def delete_quote(request, quote_id):
     try:
         quote = QuoteRequest.objects.get(id=quote_id)
@@ -154,7 +154,7 @@ def delete_quote(request, quote_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])   # 👈 no auth needed
+@permission_classes([IsAuthenticated])
 def delete_all_quotes(request):
     QuoteRequest.objects.all().delete()
     return Response({'message': 'All quotes deleted successfully'}, status=200)
@@ -172,7 +172,7 @@ def submit_contact(request):
 
 # ✅ Get all contacts (Admin only)
 @api_view(['GET'])
-@permission_classes([AllowAny])  
+@permission_classes([IsAuthenticated])
 def get_all_contacts(request):
     contacts = ContactRequest.objects.all().order_by('-submitted_at')
     serializer = ContactRequestSerializer(contacts, many=True)
@@ -180,7 +180,7 @@ def get_all_contacts(request):
 
 # ✅ Delete a single contact
 @api_view(['DELETE'])
-@permission_classes([AllowAny])  
+@permission_classes([IsAuthenticated])
 def delete_contact(request, contact_id):
     try:
         contact = ContactRequest.objects.get(id=contact_id)
@@ -191,7 +191,7 @@ def delete_contact(request, contact_id):
 
 # ✅ Delete all contacts
 @api_view(['DELETE'])
-@permission_classes([AllowAny])  
+@permission_classes([IsAuthenticated])
 def delete_all_contacts(request):
     ContactRequest.objects.all().delete()
     return Response({"message": "All contacts deleted successfully"}, status=200)
