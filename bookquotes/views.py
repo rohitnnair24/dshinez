@@ -44,7 +44,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             value=str(access_token),
             httponly=True,
             secure=False,
-            samesite='Lax',
+            samesite="None",
             path='/'
         )
         res.set_cookie(
@@ -52,7 +52,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             value=str(refresh_token),
             httponly=True,
             secure=False,
-            samesite='Lax',
+            samesite="None",
             path='/'
         )
         return res
