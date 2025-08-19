@@ -162,7 +162,7 @@ def delete_all_quotes(request):
 
 # ✅ Submit new contact form
 @api_view(['POST'])
-@permission_classes([AllowAny])  # anyone can submit
+@permission_classes([AllowAny]) 
 def submit_contact(request):
     serializer = ContactRequestSerializer(data=request.data)
     if serializer.is_valid():
@@ -180,7 +180,7 @@ def get_all_contacts(request):
 
 # ✅ Delete a single contact
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])  
+@permission_classes([AllowAny])  
 def delete_contact(request, contact_id):
     try:
         contact = ContactRequest.objects.get(id=contact_id)
@@ -191,7 +191,7 @@ def delete_contact(request, contact_id):
 
 # ✅ Delete all contacts
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])  
+@permission_classes([AllowAny])  
 def delete_all_contacts(request):
     ContactRequest.objects.all().delete()
     return Response({"message": "All contacts deleted successfully"}, status=200)
