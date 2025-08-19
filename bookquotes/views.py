@@ -96,8 +96,8 @@ def get_todos(request):
 @permission_classes([IsAuthenticated])
 def logout(request):
     res = Response({'success': True})
-    res.delete_cookie('access_token', path='/', samesite='Lax')
-    res.delete_cookie('refresh_token', path='/', samesite='Lax')
+    res.delete_cookie("access_token", path="/", samesite="None")
+    res.delete_cookie("refresh_token", path="/", samesite="None")
     return res
 
 
