@@ -143,7 +143,7 @@ def get_all_quotes(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def delete_quote(request, quote_id):
     try:
         quote = QuoteRequest.objects.get(id=quote_id)
@@ -180,7 +180,7 @@ def get_all_contacts(request):
 
 # ✅ Delete a single contact
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def delete_contact(request, contact_id):
     try:
         contact = ContactRequest.objects.get(id=contact_id)
