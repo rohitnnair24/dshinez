@@ -143,7 +143,7 @@ def get_all_quotes(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny])   # 👈 no auth needed
 def delete_quote(request, quote_id):
     try:
         quote = QuoteRequest.objects.get(id=quote_id)
@@ -154,7 +154,7 @@ def delete_quote(request, quote_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny])   # 👈 no auth needed
 def delete_all_quotes(request):
     QuoteRequest.objects.all().delete()
     return Response({'message': 'All quotes deleted successfully'}, status=200)

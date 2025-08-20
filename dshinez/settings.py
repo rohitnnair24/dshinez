@@ -139,7 +139,7 @@ DATABASES = {
         'NAME': env('DB_NAME'),
         'USER': env('DB_USER'),
         'PASSWORD': env('DB_PASSWORD'),
-        'HOST': 'database-2.cpokki0wasrz.eu-north-1.rds.amazonaws.com',
+        'HOST': 'database-1.cpokki0wasrz.eu-north-1.rds.amazonaws.com',
         'PORT': env('DB_PORT', default='5432'),
     }
 }
